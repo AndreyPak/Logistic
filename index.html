@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Управление логистикой — Olive 26.05.2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0fdf4;color:#1e293b;min-height:100vh}
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.hdr h1{font-size:19px;font-weight:700}
+.hdr .sub{font-size:12px;opacity:.8;margin-top:2px}
+.hdr-r{text-align:right;font-size:12px;opacity:.8}
+.hdr-r strong{display:block;font-size:22px;font-weight:800;opacity:1}
+
+/* ── Stats bar ── */
+.sbar{background:#fff;border-bottom:1px solid #d1fae5;padding:10px 28px;display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.st{display:flex;flex-direction:column;gap:1px}
+.st-l{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
+.st-v{font-size:17px;font-weight:800}
+.sdiv{width:1px;height:30px;background:#e2e8f0;flex-shrink:0}
+
+/* ── Tabs ── */
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;padding:0 28px;overflow-x:auto}
+.tab{padding:12px 20px;cursor:pointer;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.tab:hover{color:#16a34a}
+.tab.active{color:#16a34a;border-bottom-color:#16a34a}
+.cnt{padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;color:#fff}
+.tc{display:none;padding:20px 28px}
+.tc.active{display:block}
+
+/* ── Section header ── */
+.shdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.stitle{font-size:15px;font-weight:700}
+.ssub{font-size:11px;color:#64748b;margin-top:3px}
+.dlbtn{background:#16a34a;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:.15s;text-decoration:none}
+.dlbtn:hover{background:#15803d}
+
+/* ── Cards ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid}
+.cl{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.cv{font-size:20px;font-weight:800}
+.cs{font-size:11px;color:#94a3b8;margin-top:2px}
+
+/* ── Ration summary strip ── */
+.rat-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.rat-pill{background:#fff;border-radius:8px;padding:8px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;gap:2px}
+.rat-pill .rn{font-size:22px;font-weight:900}
+.rat-pill .rl{font-size:10px;color:#64748b}
+
+/* ── TAB 1 table ── */
+.tw{overflow-x:auto;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.08);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#f0fdf4;color:#4d7c5f;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;white-space:nowrap;border-bottom:2px solid #d1fae5;position:sticky;top:0;z-index:5}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:.1s}
+tbody tr:hover{background:#f8fffd}
+tbody tr:last-child{border-bottom:none}
+td{padding:9px 12px;vertical-align:middle}
+td.num{color:#94a3b8;font-size:11px;width:32px}
+td.fw{font-weight:600;max-width:180px}
+td.addr{color:#475569;max-width:220px;font-size:12px}
+td.sm{font-size:12px;white-space:nowrap}
+td.money{font-weight:700;color:#16a34a;white-space:nowrap;text-align:right}
+.rbadge{display:inline-block;padding:3px 9px;border-radius:9px;font-size:11px;font-weight:700;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;white-space:nowrap}
+tfoot td{background:#f8fafc;font-weight:700;border-top:2px solid #e2e8f0;padding:10px 12px}
+tfoot td.money{color:#16a34a;font-size:14px}
+
+/* ── TAB 2 price table ── */
+.price-info{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:13px}
+.price-info .pi-row{display:flex;gap:8px}
+.price-info .pi-lbl{color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.4px;min-width:90px;padding-top:1px}
+.price-info .pi-val{font-weight:600}
+
+.price-tw{overflow-x:auto;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.08);background:#fff}
+.price-table{width:100%;border-collapse:collapse;font-size:13px}
+.price-table thead th{background:#f0fdf4;color:#4d7c5f;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;border-bottom:2px solid #d1fae5;position:sticky;top:0;z-index:5;white-space:nowrap}
+.price-table thead th.th-itogo{text-align:center;width:80px}
+.price-table tbody tr{border-bottom:1px solid #f1f5f9;transition:.1s}
+.price-table tbody tr:hover{background:#f8fffd}
+.price-table td{padding:8px 12px;vertical-align:middle}
+.price-table td.art{color:#94a3b8;font-size:11px;white-space:nowrap;width:70px}
+.price-table td.prod-name{color:#1e293b;max-width:420px}
+.price-table td.krat{color:#64748b;font-size:12px;white-space:nowrap;width:80px}
+.price-table td.itogo-empty{width:80px;background:#fafafa}
+.price-table td.itogo-filled{width:80px;text-align:center;font-weight:800;font-size:16px;color:#16a34a;background:#f0fdf4}
+/* Category header row */
+.price-table tr.cat-row td{background:#1e293b;color:#fff;font-weight:700;font-size:12px;padding:7px 12px;letter-spacing:.3px}
+/* Highlighted row (has itogo) */
+.price-table tr.has-itogo td.prod-name{font-weight:600;color:#15803d}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">🫒</div>
+    <div>
+      <h1>Управление логистикой</h1>
+      <div class="sub">Olive · 26.05.2026</div>
+    </div>
+  </div>
+  <div class="hdr-r">По блюдам<strong>9</strong><span id="upd-ts" style="display:block;font-size:11px;opacity:.7;margin-top:4px;font-weight:400">Обновлено: 26.05.2026 19:49:27</span></div>
+</div>
+
+<!-- STATS -->
+<div class="sbar">
+  <div class="st"><div class="st-l">Клиентов</div><div class="st-v" style="color:#6366f1">9</div></div>
+  <div class="sdiv"></div>
+  <div class="st"><div class="st-l">1 200 ккал</div><div class="st-v" style="color:#22c55e">6</div></div>
+  <div class="st"><div class="st-l">1 500 ккал</div><div class="st-v" style="color:#f59e0b">1</div></div>
+  <div class="st"><div class="st-l">1 800 ккал</div><div class="st-v" style="color:#ef4444">2</div></div>
+  <div class="sdiv"></div>
+  <div class="st"><div class="st-l">Выручка</div><div class="st-v" style="color:#6366f1;font-size:14px">324 458 ₸</div></div>
+</div>
+
+
+
+<!-- ════════════════ TAB 2 ════════════════ -->
+<div class="tc active" id="tc1">
+  <div class="shdr" style="justify-content:flex-end;margin-bottom:12px">
+    <a class="dlbtn" href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,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" download="Заявочный_по_блюдам_27.05.2026.xlsx">⬇️ Скачать Excel</a>
+  </div>
+
+  <!-- Шапка заявки (как в оригинале) -->
+  <div class="price-info">
+    <div class="pi-row"><span class="pi-lbl">Заявочный лист</span><span class="pi-val">«Фудзавод»</span></div>
+    <div class="pi-row"><span class="pi-lbl">Дата</span><span class="pi-val">27.05.2026</span></div>
+    <div class="pi-row"><span class="pi-lbl">Компания</span><span class="pi-val">O-Live</span></div>
+    <div class="pi-row"><span class="pi-lbl">Клиентов</span><span class="pi-val" style="color:#6366f1;font-weight:800">9</span></div>
+    <div class="pi-row"><span class="pi-lbl">Эл.почта</span><span class="pi-val"></span></div>
+    <div class="pi-row"><span class="pi-lbl">Конт.тел</span><span class="pi-val"></span></div>
+    <div class="pi-row"><span class="pi-lbl">Заполнил (И.Ф.)</span><span class="pi-val"></span></div>
+  </div>
+
+  <div class="price-tw">
+    <table class="price-table">
+      <thead><tr>
+        <th>Артикул</th>
+        <th>Наименование продукта</th>
+        <th>Кратность заказа</th>
+        <th class="th-itogo">ИТОГО</th>
+      </tr></thead>
+      <tbody><tr class="cat-row"><td colspan="4">Завтрак 250-350</td></tr>
+<tr class=""><td class="art">25326</td><td class="prod-name">ПП* Упак Банановый кекс (1шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">29718</td><td class="prod-name">ПП* Упак Домашний творог с лесными ягодами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19176</td><td class="prod-name">ПП* Упак Каша из полбы с клюквой (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">376</td><td class="prod-name">ПП* Упак Каша овсяная с фруктами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19180</td><td class="prod-name">ПП* Упак Нежная кукурузная каша с джемом из кураги и семенами чиа (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">98693</td><td class="prod-name">ПП* Упак Омлет с грибами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19291</td><td class="prod-name">ПП* Упак Сырники с чиа (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">59883</td><td class="prod-name">ПП* Упак Чиа пуддинг манго (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">695</td><td class="prod-name">ПП* Упак Сэндвич с индейкой (0,5 шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">697</td><td class="prod-name">ПП* Упак Сэндвич с лососем (0,5 шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">693</td><td class="prod-name">ПП* Упак Сэндвич с ростбифом (0,5 шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Завтрак 400-500</td></tr>
+<tr class=""><td class="art">681</td><td class="prod-name">ПП* Упак Блины с ветчиной и сыром (3шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">98</td><td class="prod-name">ПП* Упак Живая гречка с семенами ,гранолой и чиа (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">91716</td><td class="prod-name">ПП* Упак Завтрак с глазуньей и креветками (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88807</td><td class="prod-name">ПП* Упак Завтрак с лососем и глазуньей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88711</td><td class="prod-name">ПП* Упак Йогурт с гранолой и курагой (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88701</td><td class="prod-name">ПП* Упак Йогурт с гранолой и малиной (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">405</td><td class="prod-name">ПП* Упак Кесадилья с яичным паштетом (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19285</td><td class="prod-name">ПП* Упак Омлет с ветчиной (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19284</td><td class="prod-name">ПП* Упак Омлет соленый лосось (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">387</td><td class="prod-name">ПП* Упак Ролл-салат по азиатски (1шт)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">29270</td><td class="prod-name">ПП* Упак Ролл-салат с курицей (1шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88708</td><td class="prod-name">ПП* Упак Скрембл с индейкой (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">90127</td><td class="prod-name">ПП* Упак Сэндвич с лососем (1шт)</td><td class="krat">1 порц</td><td class="itogo-filled">2</td></tr>
+<tr class=""><td class="art">411</td><td class="prod-name">ПП* Упак Шпинатные блинчики с курицей (2шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Горячее 400-500</td></tr>
+<tr class="has-itogo"><td class="art">352</td><td class="prod-name">ПП* Упак Белая рыба со шпинатом и пюре с цветной капусты (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">4</td></tr>
+<tr class=""><td class="art">381</td><td class="prod-name">ПП* Упак Бигус (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88848</td><td class="prod-name">ПП* Упак Индейка сувид с перловкой и соусом зеленым велюте (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">369</td><td class="prod-name">ПП* Упак Куриная грудинка с запеченным картофелем (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">5</td></tr>
+<tr class=""><td class="art">480</td><td class="prod-name">ПП* Упак Куриная грудка с нутом (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">55979</td><td class="prod-name">ПП* Упак Куриная грудка с орзо (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">378</td><td class="prod-name">ПП* Упак Куриное бедро с рагу из овощей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88825</td><td class="prod-name">ПП* Упак Куриное филе с киноа и соусом грин (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88881</td><td class="prod-name">ПП* Упак Куриное филе с рисом и зеленым соусом велюте (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88878</td><td class="prod-name">ПП* Упак Куриный Кебаб с овощами гриль (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19226</td><td class="prod-name">ПП* Упак Курица с овощами на гриле (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19229</td><td class="prod-name">ПП* Упак Лапша соба с говядиной (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19230</td><td class="prod-name">ПП* Упак Лапша соба с курицей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">366</td><td class="prod-name">ПП* Упак Люля куриный с овощами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">57926</td><td class="prod-name">ПП* Упак Мясо по-казахски с картофелем и семолиной (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">91735</td><td class="prod-name">ПП* Упак Паста цельнозерновая с курицей сувид (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">34380</td><td class="prod-name">ПП* Упак Поке с креветками (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">37378</td><td class="prod-name">ПП* Упак Поке с курицей (1шт)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">94379</td><td class="prod-name">ПП* Упак Поке с лососем (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">88876</td><td class="prod-name">ПП* Упак Семга с бурым рисом (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">88852</td><td class="prod-name">ПП* Упак Сочные митболы с картофельным пюре и овощами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">39219</td><td class="prod-name">ПП* Упак Танкацу с брокколи и картофельным пюре (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">61720</td><td class="prod-name">ПП* Упак Томленный гуляш с польбой и овощами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88817</td><td class="prod-name">ПП* Упак Тучикены с соусом арабиата и гречкой 1 пор</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">31095</td><td class="prod-name">ПП* Упак Фит панкейки из кабачков с соусом дзадзыки (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Горячее 500-600</td></tr>
+<tr class=""><td class="art">348</td><td class="prod-name">ПП* Упак Белая рыба со шпинатом и картофельным пюре (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88875</td><td class="prod-name">ПП* Упак Бифштекс с яйцом и картофелем (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">88832</td><td class="prod-name">ПП* Упак Индейка сувид с гречкой и грибным соусом (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">19219</td><td class="prod-name">ПП* Упак Котлета рыбная с рисом и овощами (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">478</td><td class="prod-name">ПП* Упак Куриная грудка с чечевицей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">66984</td><td class="prod-name">ПП* Упак Паста болоньезе (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">66983</td><td class="prod-name">ПП* Упак Паста с курицей и грибами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Суп 200</td></tr>
+<tr class=""><td class="art">88860</td><td class="prod-name">ПП* Упак Крем-суп из запеченной тыквы с чечевицей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">44928</td><td class="prod-name">ПП* Упак Суп борщ с говядиной (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">19249</td><td class="prod-name">ПП* Упак Суп тыквенный (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">18250</td><td class="prod-name">ПП* Упак Суп щи с кислой капустой (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">88868</td><td class="prod-name">ПП* Упак Тайский суп (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">19253</td><td class="prod-name">ПП* Упак Харчо с насыщенным пряным бульоном (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Салат 150-250</td></tr>
+<tr class=""><td class="art">37967</td><td class="prod-name">ПП* Упак Грин детокс салат с брокколи и семенами тыквы (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">484</td><td class="prod-name">ПП* Упак Грин микс с огурцом и горошком (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">52968</td><td class="prod-name">ПП* Упак Зеленый салат с брокколи и цитрусами (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">6</td></tr>
+<tr class=""><td class="art">52969</td><td class="prod-name">ПП* Упак Зеленый салат с оливками (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">78940</td><td class="prod-name">ПП* Упак Классический греческий салат с фетой и оливковым маслом (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">52970</td><td class="prod-name">ПП* Упак Миск зеленых овощей с авокадо и томатами черри (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">57930</td><td class="prod-name">ПП* Упак Салат Витаминка (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">57371</td><td class="prod-name">ПП* Упак Салат с индейкой (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">488</td><td class="prod-name">ПП* Упак Шпинатный салат с черри и маслинами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Салат 250-350</td></tr>
+<tr class=""><td class="art">100</td><td class="prod-name">ПП* Упак Салат Детокс (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">85219</td><td class="prod-name">ПП* Упак Салат итальянский с соусом песто (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">85221</td><td class="prod-name">ПП* Упак Салат с лососем (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">64386</td><td class="prod-name">ПП* Упак Салат с тыквой и киноа (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">85220</td><td class="prod-name">ПП* Упак Салат Цезарь с курицей (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Выпечка/Десерт 100-250</td></tr>
+<tr class=""><td class="art">17857</td><td class="prod-name">Овсяные хлебцы</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Выпечка/Десерт 100-250</td></tr>
+<tr class="cat-row"><td colspan="4">Выпечка/Десерт 300-350</td></tr>
+<tr class="cat-row"><td colspan="4">Смузи 100-150</td></tr>
+<tr class=""><td class="art">47537</td><td class="prod-name">ПП* Упак Смузи морковь,апельсин,тыква (1шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Сендвичи 300-350</td></tr>
+<tr class="cat-row"><td colspan="4">Блюда на замену</td></tr>
+<tr class="has-itogo"><td class="art">405</td><td class="prod-name">ПП* Упак Кесадилья с яичным паштетом (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">3</td></tr>
+<tr class=""><td class="art">19281</td><td class="prod-name">ПП* Упак Омлет запеченная курица (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">130</td><td class="prod-name">ПП* Упак Сэндвич с ростбифом (1шт)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">414</td><td class="prod-name">ПП* Упак Говядина с тушеными овощами и булгуром (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">19224</td><td class="prod-name">ПП* Упак Жаренный лосось с азиатским рисом (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">3</td></tr>
+<tr class=""><td class="art">88825</td><td class="prod-name">ПП* Упак Куриное филе с киноа и соусом грин (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">88837</td><td class="prod-name">ПП* Упак Пенне из 5 злаков с куриным филе под соусом зеленый велюте (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class="has-itogo"><td class="art">91716</td><td class="prod-name">ПП* Упак Завтрак с глазуньей и креветками (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">2</td></tr>
+<tr class="has-itogo"><td class="art">19284</td><td class="prod-name">ПП* Упак Омлет соленый лосось (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">88885</td><td class="prod-name">ПП* Упак Нежная семга с овощами гриль (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">46945</td><td class="prod-name">ПП* Упак Паста с креветками (1порц)</td><td class="krat">1 порц</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">361</td><td class="prod-name">ПП* Упак Ростбиф с гречкой и чими чури (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">358</td><td class="prod-name">ПП* Упак Ростбиф с грибами (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class=""><td class="art">517</td><td class="prod-name">ПП* Упак Спагетти с морепродуктами в томатном соусе (1порц)</td><td class="krat">1 порц</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Материалы</td></tr>
+<tr class="has-itogo"><td class="art">27602</td><td class="prod-name">У* Термопакет серый 28*28*20</td><td class="krat">1 шт</td><td class="itogo-filled">6</td></tr>
+<tr class="has-itogo"><td class="art">27605</td><td class="prod-name">У* Термопакет оранжевый 30*30*20</td><td class="krat">1 шт</td><td class="itogo-filled">2</td></tr>
+<tr class="has-itogo"><td class="art">27603</td><td class="prod-name">У* Термопакет зеленый 28*28*20</td><td class="krat">1 шт</td><td class="itogo-filled">1</td></tr>
+<tr class=""><td class="art">27604</td><td class="prod-name">У* Термопакет красный 30*30*20</td><td class="krat">1 шт</td><td class="itogo-empty"></td></tr>
+<tr class="has-itogo"><td class="art">99727</td><td class="prod-name">У* Набор одноразовый (вилка,ложка,салфетка)</td><td class="krat">1 шт</td><td class="itogo-filled">9</td></tr>
+<tr class="has-itogo"><td class="art">31880</td><td class="prod-name">С* Вода Тассай без газа 777 мл</td><td class="krat">1 шт</td><td class="itogo-filled">9</td></tr>
+<tr class=""><td class="art"></td><td class="prod-name">Хладогент</td><td class="krat">1 шт</td><td class="itogo-empty"></td></tr>
+<tr class="cat-row"><td colspan="4">Полуфабрикаты для дома</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const LABELS = [{"id": "23883", "title": "Олеся 9458 1200 Ккал Продление ", "name": "Олеся", "phone4": "9458", "address": "Жансугурова, 176а/2, кв. -, домофон: -", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Домашний творог с лесными ягодами", "bold": false}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Спагетти с морепродуктами в томатном соусе", "bold": true}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}, {"id": "23856", "title": "Айгерим 4911 1800 Ккал Новый", "name": "Айгерим", "phone4": "4911", "address": "Аль-Фараби, 41/3, кв. 124", "ration": "1800 ккал", "menu": [{"type": "Завтрак", "dish": "Омлет запеченная курица", "bold": true}, {"type": "Завтрак", "dish": "Салат с лососем", "bold": false}, {"type": "Обед", "dish": "Лапша соба с курицей", "bold": false}, {"type": "Обед", "dish": "Крем-суп из запечённой тыквы с чечевицей", "bold": false}, {"type": "Ужин", "dish": "Паста цельнозерновая с курицей сувид", "bold": false}]}, {"id": "23369", "title": "Андрей 0705/1800ккал Продление", "name": "Андрей", "phone4": "0705", "address": "KOKTEM 3, 24, кв. 140, домофон: 140", "ration": "1800 ккал", "menu": []}, {"id": "23567", "title": "Алина Олив 8682/1500ккал Продление", "name": "Алина Олив", "phone4": "8682", "address": "Кокшокы, 6/1, кв. 1, домофон: 1", "ration": "1500 ккал", "menu": [{"type": "Завтрак", "dish": "Скрембл с индейкой", "bold": false}, {"type": "Обед", "dish": "Салат детокс", "bold": false}, {"type": "Обед", "dish": "Бифштекс с яйцом и картофелем", "bold": false}, {"type": "Ужин", "dish": "Куриная грудка с запечённым картофелем", "bold": false}]}, {"id": "23569", "title": "Данияр Olive 9892/1200ккал Продление", "name": "Данияр Olive", "phone4": "9892", "address": "райымбека, 210/3 блок 11, кв. 260, домофон: 260", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Домашний творог с лесными ягодами", "bold": false}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Индейка сувид с перловкой и соусом зеленым велюте", "bold": false}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}, {"id": "23615", "title": "Алексей 2329/1200ккал Новый", "name": "Алексей", "phone4": "2329", "address": "СарыАрка, 1/4, 9, кв. 43, домофон: 43", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Кесадилья с яичным паштетом", "bold": true}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Куриное филе с киноа и соусом грин", "bold": true}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}, {"id": "23683", "title": "Рустам Олив 9947/1200ккал Продление", "name": "Рустам Олив", "phone4": "9947", "address": "Навои, 37, кв. 332, домофон: 332", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Омлет запеченная курица", "bold": true}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Индейка сувид с перловкой и соусом зеленым велюте", "bold": false}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}, {"id": "23739", "title": "Перизат 1444/1200ккал Продление", "name": "Перизат", "phone4": "1444", "address": "Назарбаева 28а, 19, кв. 32, домофон: 32", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Завтрак с глазуньей и креветками", "bold": true}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Сэндвич мини с ростбифом", "bold": true}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}, {"id": "23813", "title": "Алтынай 0714  1 200 Ккал Продление", "name": "Алтынай", "phone4": "0714", "address": "Аль-Фараби, 34", "ration": "1200 ккал", "menu": [{"type": "Завтрак", "dish": "Домашний творог с лесными ягодами", "bold": false}, {"type": "Обед", "dish": "Грин детокс салат с брокколи и семенами тыквы", "bold": false}, {"type": "Обед", "dish": "Индейка сувид с перловкой и соусом зеленым велюте", "bold": false}, {"type": "Полдник", "dish": "Овсяные хлебцы", "bold": false}, {"type": "Ужин", "dish": "Бигус", "bold": false}]}];
+const D2 = [{"id": "23883", "name": "Олеся", "title": "Олеся 9458 1200 Ккал Продление ", "ration": "1 200 ккал", "ration_id": "325", "address": "", "apt": "", "start": "27.05.2026", "end": "01.06.2026", "opp": 32918.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23856", "name": "Айгерим", "title": "Айгерим 4911 1800 Ккал Новый", "ration": "1 800 ккал", "ration_id": "329", "address": "", "apt": "", "start": "27.05.2026", "end": "31.05.2026", "opp": 41500.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23369", "name": "Андрей 0705", "title": "Андрей 0705/1800ккал Продление", "ration": "1 800 ккал", "ration_id": "329", "address": "Коктем-3, дом 24, кв.140", "apt": "140", "start": "21.05.2026", "end": "25.05.2026", "opp": 42137.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23567", "name": "Алина Олив 8682", "title": "Алина Олив 8682/1500ккал Продление", "ration": "1 500 ккал", "ration_id": "327", "address": "Улица Кокшокы,, 6/1", "apt": "Частный дом", "start": "23.05.2026", "end": "01.06.2026", "opp": 39092.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23569", "name": "Данияр Olive 9892", "title": "Данияр Olive 9892/1200ккал Продление", "ration": "1 200 ккал", "ration_id": "325", "address": "Райымбека, 210/3 блок 11, кв. 260, домофон: 260", "apt": "260", "start": "25.05.2026", "end": "05.06.2026", "opp": 31510.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23615", "name": "Алексей Олив 2329", "title": "Алексей Олив 2329/1200ккал Новый", "ration": "1 200 ккал", "ration_id": "325", "address": "СарыАрка, 1/4, 9, кв. 43, домофон: 43", "apt": "43", "start": "25.05.2026", "end": "03.06.2026", "opp": 36500.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23683", "name": "Рустам Олив 9947", "title": "Рустам Олив 9947/1200ккал Продление", "ration": "1 200 ккал", "ration_id": "325", "address": "Навои 37, блок 10, 3 этаж, кв 332", "apt": "332", "start": "24.05.2026", "end": "02.06.2026", "opp": 31509.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23739", "name": "Перизат 1444", "title": "Перизат 1444/1200ккал Продление", "ration": "1 200 ккал", "ration_id": "325", "address": "Назарбаева 28а, 19, кв. 32, домофон: 32", "apt": "32", "start": "25.05.2026", "end": "03.06.2026", "opp": 35228.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}, {"id": "23813", "name": "Алтынай", "title": "Алтынай 0714  1 200 Ккал Продление", "ration": "1 200 ккал", "ration_id": "325", "address": "Аль-Фараби, 34", "apt": "", "start": "26.05.2026", "end": "01.06.2026", "opp": 34064.0, "stage": "C13:UC_ARUS3Z", "stage_label": "Актив Блюда"}];
+const PRODS = [{"type": "category", "name": "Завтрак 250-350"}, {"type": "product", "category": "Завтрак 250-350", "artikul": 25326, "name": "ПП* Упак Банановый кекс (1шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 29718, "name": "ПП* Упак Домашний творог с лесными ягодами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 19176, "name": "ПП* Упак Каша из полбы с клюквой (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 376, "name": "ПП* Упак Каша овсяная с фруктами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 19180, "name": "ПП* Упак Нежная кукурузная каша с джемом из кураги и семенами чиа (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 98693, "name": "ПП* Упак Омлет с грибами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 19291, "name": "ПП* Упак Сырники с чиа (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 59883, "name": "ПП* Упак Чиа пуддинг манго (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Завтрак 250-350", "artikul": 695, "name": "ПП* Упак Сэндвич с индейкой (0,5 шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 697, "name": "ПП* Упак Сэндвич с лососем (0,5 шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 250-350", "artikul": 693, "name": "ПП* Упак Сэндвич с ростбифом (0,5 шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Завтрак 400-500"}, {"type": "product", "category": "Завтрак 400-500", "artikul": 681, "name": "ПП* Упак Блины с ветчиной и сыром (3шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 98, "name": "ПП* Упак Живая гречка с семенами ,гранолой и чиа (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 91716, "name": "ПП* Упак Завтрак с глазуньей и креветками (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 88807, "name": "ПП* Упак Завтрак с лососем и глазуньей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 88711, "name": "ПП* Упак Йогурт с гранолой и курагой (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 88701, "name": "ПП* Упак Йогурт с гранолой и малиной (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 405, "name": "ПП* Упак Кесадилья с яичным паштетом (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 19285, "name": "ПП* Упак Омлет с ветчиной (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 19284, "name": "ПП* Упак Омлет соленый лосось (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 387, "name": "ПП* Упак Ролл-салат по азиатски (1шт)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Завтрак 400-500", "artikul": 29270, "name": "ПП* Упак Ролл-салат с курицей (1шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 88708, "name": "ПП* Упак Скрембл с индейкой (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Завтрак 400-500", "artikul": 90127, "name": "ПП* Упак Сэндвич с лососем (1шт)", "kratnost": "1 порц", "itogo": 2}, {"type": "product", "category": "Завтрак 400-500", "artikul": 411, "name": "ПП* Упак Шпинатные блинчики с курицей (2шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Горячее 400-500"}, {"type": "product", "category": "Горячее 400-500", "artikul": 352, "name": "ПП* Упак Белая рыба со шпинатом и пюре с цветной капусты (1порц)", "kratnost": "1 порц", "itogo": 4}, {"type": "product", "category": "Горячее 400-500", "artikul": 381, "name": "ПП* Упак Бигус (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88848, "name": "ПП* Упак Индейка сувид с перловкой и соусом зеленым велюте (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 369, "name": "ПП* Упак Куриная грудинка с запеченным картофелем (1порц)", "kratnost": "1 порц", "itogo": 5}, {"type": "product", "category": "Горячее 400-500", "artikul": 480, "name": "ПП* Упак Куриная грудка с нутом (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 55979, "name": "ПП* Упак Куриная грудка с орзо (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 378, "name": "ПП* Упак Куриное бедро с рагу из овощей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88825, "name": "ПП* Упак Куриное филе с киноа и соусом грин (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88881, "name": "ПП* Упак Куриное филе с рисом и зеленым соусом велюте (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88878, "name": "ПП* Упак Куриный Кебаб с овощами гриль (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 19226, "name": "ПП* Упак Курица с овощами на гриле (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 19229, "name": "ПП* Упак Лапша соба с говядиной (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 19230, "name": "ПП* Упак Лапша соба с курицей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 366, "name": "ПП* Упак Люля куриный с овощами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 57926, "name": "ПП* Упак Мясо по-казахски с картофелем и семолиной (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 91735, "name": "ПП* Упак Паста цельнозерновая с курицей сувид (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 34380, "name": "ПП* Упак Поке с креветками (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 37378, "name": "ПП* Упак Поке с курицей (1шт)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Горячее 400-500", "artikul": 94379, "name": "ПП* Упак Поке с лососем (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88876, "name": "ПП* Упак Семга с бурым рисом (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Горячее 400-500", "artikul": 88852, "name": "ПП* Упак Сочные митболы с картофельным пюре и овощами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 39219, "name": "ПП* Упак Танкацу с брокколи и картофельным пюре (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 61720, "name": "ПП* Упак Томленный гуляш с польбой и овощами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 88817, "name": "ПП* Упак Тучикены с соусом арабиата и гречкой 1 пор", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 400-500", "artikul": 31095, "name": "ПП* Упак Фит панкейки из кабачков с соусом дзадзыки (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Горячее 500-600"}, {"type": "product", "category": "Горячее 500-600", "artikul": 348, "name": "ПП* Упак Белая рыба со шпинатом и картофельным пюре (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 500-600", "artikul": 88875, "name": "ПП* Упак Бифштекс с яйцом и картофелем (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 500-600", "artikul": 88832, "name": "ПП* Упак Индейка сувид с гречкой и грибным соусом (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 500-600", "artikul": 19219, "name": "ПП* Упак Котлета рыбная с рисом и овощами (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Горячее 500-600", "artikul": 478, "name": "ПП* Упак Куриная грудка с чечевицей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Горячее 500-600", "artikul": 66984, "name": "ПП* Упак Паста болоньезе (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Горячее 500-600", "artikul": 66983, "name": "ПП* Упак Паста с курицей и грибами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Суп 200"}, {"type": "product", "category": "Суп 200", "artikul": 88860, "name": "ПП* Упак Крем-суп из запеченной тыквы с чечевицей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Суп 200", "artikul": 44928, "name": "ПП* Упак Суп борщ с говядиной (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Суп 200", "artikul": 19249, "name": "ПП* Упак Суп тыквенный (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Суп 200", "artikul": 18250, "name": "ПП* Упак Суп щи с кислой капустой (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Суп 200", "artikul": 88868, "name": "ПП* Упак Тайский суп (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Суп 200", "artikul": 19253, "name": "ПП* Упак Харчо с насыщенным пряным бульоном (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Салат 150-250"}, {"type": "product", "category": "Салат 150-250", "artikul": 37967, "name": "ПП* Упак Грин детокс салат с брокколи и семенами тыквы (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 484, "name": "ПП* Упак Грин микс с огурцом и горошком (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 52968, "name": "ПП* Упак Зеленый салат с брокколи и цитрусами (1порц)", "kratnost": "1 порц", "itogo": 6}, {"type": "product", "category": "Салат 150-250", "artikul": 52969, "name": "ПП* Упак Зеленый салат с оливками (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 78940, "name": "ПП* Упак Классический греческий салат с фетой и оливковым маслом (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 52970, "name": "ПП* Упак Миск зеленых овощей с авокадо и томатами черри (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 57930, "name": "ПП* Упак Салат Витаминка (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 150-250", "artikul": 57371, "name": "ПП* Упак Салат с индейкой (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Салат 150-250", "artikul": 488, "name": "ПП* Упак Шпинатный салат с черри и маслинами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Салат 250-350"}, {"type": "product", "category": "Салат 250-350", "artikul": 100, "name": "ПП* Упак Салат Детокс (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 250-350", "artikul": 85219, "name": "ПП* Упак Салат итальянский с соусом песто (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Салат 250-350", "artikul": 85221, "name": "ПП* Упак Салат с лососем (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Салат 250-350", "artikul": 64386, "name": "ПП* Упак Салат с тыквой и киноа (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Салат 250-350", "artikul": 85220, "name": "ПП* Упак Салат Цезарь с курицей (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Выпечка/Десерт 100-250"}, {"type": "product", "category": "Выпечка/Десерт 100-250", "artikul": 17857, "name": "Овсяные хлебцы", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Выпечка/Десерт 100-250"}, {"type": "category", "name": "Выпечка/Десерт 300-350"}, {"type": "category", "name": "Смузи 100-150"}, {"type": "product", "category": "Смузи 100-150", "artikul": 47537, "name": "ПП* Упак Смузи морковь,апельсин,тыква (1шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Сендвичи 300-350"}, {"type": "category", "name": "Блюда на замену"}, {"type": "product", "category": "Блюда на замену", "artikul": 405, "name": "ПП* Упак Кесадилья с яичным паштетом (1порц)", "kratnost": "1 порц", "itogo": 3}, {"type": "product", "category": "Блюда на замену", "artikul": 19281, "name": "ПП* Упак Омлет запеченная курица (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 130, "name": "ПП* Упак Сэндвич с ростбифом (1шт)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 414, "name": "ПП* Упак Говядина с тушеными овощами и булгуром (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 19224, "name": "ПП* Упак Жаренный лосось с азиатским рисом (1порц)", "kratnost": "1 порц", "itogo": 3}, {"type": "product", "category": "Блюда на замену", "artikul": 88825, "name": "ПП* Упак Куриное филе с киноа и соусом грин (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 88837, "name": "ПП* Упак Пенне из 5 злаков с куриным филе под соусом зеленый велюте (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Блюда на замену", "artikul": 91716, "name": "ПП* Упак Завтрак с глазуньей и креветками (1порц)", "kratnost": "1 порц", "itogo": 2}, {"type": "product", "category": "Блюда на замену", "artikul": 19284, "name": "ПП* Упак Омлет соленый лосось (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Блюда на замену", "artikul": 88885, "name": "ПП* Упак Нежная семга с овощами гриль (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 46945, "name": "ПП* Упак Паста с креветками (1порц)", "kratnost": "1 порц", "itogo": 1}, {"type": "product", "category": "Блюда на замену", "artikul": 361, "name": "ПП* Упак Ростбиф с гречкой и чими чури (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 358, "name": "ПП* Упак Ростбиф с грибами (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "product", "category": "Блюда на замену", "artikul": 517, "name": "ПП* Упак Спагетти с морепродуктами в томатном соусе (1порц)", "kratnost": "1 порц", "itogo": 0}, {"type": "category", "name": "Материалы"}, {"type": "product", "category": "Материалы", "artikul": 27602, "name": "У* Термопакет серый 28*28*20", "kratnost": "1 шт", "itogo": 6}, {"type": "product", "category": "Материалы", "artikul": 27605, "name": "У* Термопакет оранжевый 30*30*20", "kratnost": "1 шт", "itogo": 2}, {"type": "product", "category": "Материалы", "artikul": 27603, "name": "У* Термопакет зеленый 28*28*20", "kratnost": "1 шт", "itogo": 1}, {"type": "product", "category": "Материалы", "artikul": 27604, "name": "У* Термопакет красный 30*30*20", "kratnost": "1 шт", "itogo": 0}, {"type": "product", "category": "Материалы", "artikul": 99727, "name": "У* Набор одноразовый (вилка,ложка,салфетка)", "kratnost": "1 шт", "itogo": 9}, {"type": "product", "category": "Материалы", "artikul": 31880, "name": "С* Вода Тассай без газа 777 мл", "kratnost": "1 шт", "itogo": 9}, {"type": "product", "category": "Материалы", "artikul": "", "name": "Хладогент", "kratnost": "1 шт", "itogo": 0}, {"type": "category", "name": "Полуфабрикаты для дома"}];
+
+
+
+function dlXlsx() {
+  const wb = XLSX.utils.book_new();
+
+  // ── Лист 1: Прайс Сегодня с заливками и границами ──
+  const ws1 = {};
+  let r = 0;
+
+  const THIN = { style: 'thin', color: { rgb: 'FF000000' } };
+  const ALL_BORDERS = { top: THIN, bottom: THIN, left: THIN, right: THIN };
+
+  // Создаём ячейку с опциональными fill/bold/border
+  function sc(col, row0, v, opts) {
+    const addr = col + (row0 + 1);
+    const isNum = typeof v === 'number';
+    ws1[addr] = { v: (v === null || v === undefined) ? '' : v, t: isNum ? 'n' : 's' };
+    if (opts) {
+      const s = {};
+      if (opts.fill) s.fill = { fgColor: { rgb: opts.fill }, patternType: 'solid' };
+      if (opts.bold) s.font = { bold: true };
+      if (opts.border) s.border = ALL_BORDERS;
+      if (Object.keys(s).length) ws1[addr].s = s;
+    }
+  }
+
+  // Заголовочный блок (строки 1-7) — без границ
+  sc('A', r, 1); sc('B', r, 'Заявочный лист "Фудзавод"'); r++;
+  sc('A', r, 'Информация заказчика'); r++;
+  sc('A', r, 'Дата'); sc('B', r, '27.05.2026'); r++;
+  sc('A', r, 'Компания'); sc('B', r, 'O-Live'); r++;
+  sc('A', r, 'Эл.почта'); r++;
+  sc('A', r, 'Конт.тел'); r++;
+  sc('A', r, 'Заполнил (И.Ф.)'); r++;
+
+  // Строка-заголовок таблицы (строка 8) — серый + жирный + границы
+  const HDR = { fill: 'FFD9D9D9', bold: true, border: true };
+  sc('A', r, 'Артикул',               HDR);
+  sc('B', r, 'Наименование продукта', HDR);
+  sc('C', r, 'Кратность заказа',      HDR);
+  sc('D', r, 'ИТОГО',                 HDR);
+  r++;
+
+  // Строка 9 — серая разделительная (все 4 ячейки серые)
+  const SEP = { fill: 'FFA6A6A6', border: true };
+  sc('A', r, '', SEP);
+  sc('B', r, '', SEP);
+  sc('C', r, '', SEP);
+  sc('D', r, '', SEP);
+  r++;
+
+  const CAT_FILL = 'FFFF00'; // жёлтый
+  const MAT_FILL = 'FF8EA9DB'; // синий
+
+  PRODS.forEach(p => {
+    if (p.type === 'category') {
+      const isMat = p.name === 'Материалы' || p.name === 'Полуфабрикаты для дома';
+      const fill = isMat ? MAT_FILL : CAT_FILL;
+      sc('A', r, p.name, { fill, bold: true, border: true });
+      sc('B', r, '',      { fill, bold: true, border: true });
+      sc('C', r, '',      { fill, border: true });
+      sc('D', r, '',      { fill, border: true });
+    } else {
+      sc('A', r, p.artikul || '', { border: true });
+      sc('B', r, p.name,          { border: true });
+      sc('C', r, p.kratnost,      { border: true });
+      if (p.itogo > 0) {
+        sc('D', r, p.itogo, { border: true });
+      } else {
+        sc('D', r, '', { border: true });
+      }
+    }
+    r++;
+  });
+
+  ws1['!ref'] = 'A1:D' + r;
+  ws1['!cols'] = [{wch:10},{wch:55},{wch:16},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Прайс Сегодня');
+
+  // ── Лист 2: Этикетки ──
+  const ws2 = {};
+  let er = 0;
+
+  function ec(col, row0, v, bold, fill) {
+    const addr = col + (row0 + 1);
+    ws2[addr] = { v: v === null || v === undefined ? '' : v,
+                  t: typeof v === 'number' ? 'n' : 's' };
+    const s = {};
+    if (bold) s.font = { bold: true };
+    if (fill) s.fill = { fgColor: { rgb: fill }, patternType: 'solid' };
+    if (Object.keys(s).length) ws2[addr].s = s;
+  }
+
+  LABELS.forEach(lb => {
+    // Строка 1: ФИО + телефон | Рацион + адрес
+    ec('A', er, 'ФИО:', true);
+    ec('B', er, lb.name + ' ' + lb.phone4);
+    er++;
+
+    // Строка 2: Адрес | Рацион ккал + адрес
+    ec('A', er, 'Адрес:', true);
+    ec('B', er, lb.ration + ' ' + lb.address);
+    er++;
+
+    // Пустая строка
+    er++;
+
+    // Строка 4: Рацион
+    ec('A', er, 'Рацион:', true);
+    ec('B', er, lb.ration, true);
+    er++;
+
+    // Пустая строка
+    er++;
+
+    // Строка 6: Меню
+    ec('A', er, 'Меню', true);
+    er++;
+
+    // Блюда
+    lb.menu.forEach(item => {
+      ec('A', er, item.type + ': ' + item.dish, item.bold);
+      er++;
+    });
+
+    // Разделитель между клиентами (2 пустые строки)
+    er += 2;
+  });
+
+  ws2['!ref'] = 'A1:D' + er;
+  ws2['!cols'] = [{wch:18},{wch:55},{wch:15},{wch:15}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Этикетки');
+
+  const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array', cellStyles:true});
+  const blob = new Blob([wbout], {type:'application/octet-stream'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'Заявочный_по_блюдам_27.05.2026.xlsx'; a.click();
+}
+</script>
+</body>
+</html>
